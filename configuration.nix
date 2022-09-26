@@ -90,25 +90,17 @@
   nixpkgs.config.allowUnfree = true;
 
   environment.systemPackages = with pkgs; [
-     xarchiver gparted
+    gparted xclip
   ];
- 
+
   # Neovim
   programs.neovim = {
     enable = true;
     defaultEditor = true;
     configure = {
-      customRC = ''
-        set clipboard+=unnamedplus
-        set hidden
-        set mouse=a
-        set number 
-        set title
-        set nowrap
-      '';
-      packages.myVimPackage = with pkgs.vimPlugins; { 
-        start = [ vim-nix vim-startify ];
-      };
+      customRC = (
+        builtins.readFile /home/gustavo/.config/nvim/init.vim
+      );
     };
   };
  
