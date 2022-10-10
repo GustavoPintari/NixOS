@@ -1,7 +1,3 @@
-# Edit this configuration file to define what should be installed on
-# your system.  Help is available in the configuration.nix(5) man page
-# and in the NixOS manual (accessible by running ‘nixos-help’).
-
 { config, pkgs, ... }:
 
 {
@@ -21,11 +17,6 @@
   # Set time zone
   time.timeZone = "America/Sao_Paulo";
 
-  # The global useDHCP flag is deprecated, therefore explicitly set to false here.
-  # Per-interface useDHCP will be mandatory in the future, so this generated config
-  # replicates the default behaviour.
-
-  networking.useDHCP = false;
   networking.interfaces.enp0s25.useDHCP = true;
   networking.interfaces.wlp2s0.useDHCP = true;
   programs.nm-applet.enable = true; 
@@ -33,13 +24,7 @@
   # Internationalisation properties
   i18n.defaultLocale = "en_US.UTF-8";
 
-  # Remove screen tearing
-  services.xserver.videoDrivers = [ "intel" ];
-  services.xserver.deviceSection = ''
-	Option "DRI" "3"
-	Option "TearFree" "true"
-  '';
-
+  # Opengl 
   hardware.opengl.enable = true;
   hardware.opengl.driSupport32Bit = true;
 
@@ -69,28 +54,28 @@
     options = "-d";
   };
 
-  # Enable sound.
+  # Sound
   sound.enable = true;
   hardware.pulseaudio.enable = true;
-
-  # Enable touchpad support 
-  services.xserver.libinput.enable = true;
 
   # VirtualBox
   virtualisation.virtualbox.host.enable = true;
   users.extraGroups.vboxusers.members = [ "gustavo" ];
+  
+  # Docker
+  virtualisation.docker.enable = true;
 
   # Users 
   users.users.gustavo = {
-     isNormalUser = true;
-     extraGroups = [ "wheel" "networkmanager" ];
+    isNormalUser = true;
+    extraGroups = [ "wheel" "docker" "networkmanager" ];
   };
   
   # Packages
   nixpkgs.config.allowUnfree = true;
 
   environment.systemPackages = with pkgs; [
-    gparted xclip
+    gparted xclip 
   ];
 
   # Neovim
@@ -103,7 +88,7 @@
       );
     };
   };
- 
+
   # Shell
   programs.zsh = {
     enable = true;
@@ -126,6 +111,8 @@
     lightdm.enable = true;
   };
 
+  services.acpid.enable = true;
+
   # Xorg 
   services.xserver = {
     enable = true;
@@ -133,16 +120,19 @@
     xkbVariant = "thinkpad";
   };
 
-  # OpenSSH
-  services.openssh = {
-    enable = true;
-    allowSFTP = true;
-    passwordAuthentication = false;
-  };
+  # Enable touchpad support 
+  services.xserver.libinput.enable = true;
+
+  # Remove screen tearing
+  services.xserver.videoDrivers = [ "intel" ];
+  services.xserver.deviceSection = ''
+	  Option "DRI" "3"
+	  Option "TearFree" "true"
+  '';
 
   # Firewall
   networking.firewall.enable = true;
-  networking.firewall.allowedTCPPorts = [ 27010 5432 3306 ];
+  networking.firewall.allowedTCPPorts = [ ];
 
   # This value determines the NixOS release from which the default
   # settings for stateful data, like file locations and database versions
