@@ -1,18 +1,25 @@
 { config, pkgs, ... }:
 
 {
-  # Home Manager needs a bit of information about you and the
-  # paths it should manage.
+  imports = [
+    ./nvim/nvim.nix
+  ];
+
   home.username = "gustavo";
   home.homeDirectory = "/home/gustavo";
+
+  home.sessionVariables = {
+    EDITOR = "nvim";
+  };
 
   home.packages = with pkgs; [
     firefox-esr libreoffice neofetch git  
     nicotine-plus ncmpcpp mpd vlc ranger ueberzug krita
     winePackages.staging eclipses.eclipse-jee jdk vscode git
     transmission-gtk flameshot bottom htop wget curl 
-    obsidian discord barrier patool unzip
-    corefonts 
+    obsidian discord patool unzip unrar
+    corefonts nerdfonts
+    beekeeper-studio insomnia 
   ];
 
   fonts.fontconfig.enable = true;
@@ -94,7 +101,7 @@
       name = "Hack Regular";
       size = 12;
     };
-    extraConfig = "
+    extraConfig = ''
       background                #000000
       cursor_blink_interval     1.5
       background_opacity        0.95
@@ -103,56 +110,7 @@
       window_padding_width      0 
       placement_strategy        center
       confirm_os_window_close   0
-    ";
-  };
-
-  # Neovim 
-  programs.neovim = {
-    enable = true;
-    plugins = with pkgs.vimPlugins; [
-      vim-nix
-      nerdtree
-      neovim-ayu
-      indentLine
-      nvim-autopairs
-      vim-hexokinase
-
-      (nvim-treesitter.withPlugins (_: pkgs.tree-sitter.allGrammars))
-
-      {
-        plugin = nvim-ts-autotag;
-        config =
-          "lua require 'nvim-ts-autotag'.setup()";
-      } 
-      {
-        plugin = nvim-autopairs;
-        config = 
-          "lua require 'nvim-autopairs'.setup()";
-      }
-      {
-        plugin = lualine-nvim;
-        config = "
-          lua require 'lualine'
-          .setup({theme = 'auto'})
-        ";
-      }
-
-    ];
-    extraConfig = ''
-      syntax on
-      set termguicolors
-      set cursorline
-      set hidden
-      set mouse=a
-      set number 
-      set title
-      set nowrap
-      set clipboard=unnamedplus
-      set encoding=utf8
-      set tabstop=2 softtabstop=2 expandtab shiftwidth=2
-      color ayu-dark
-
-      map <C-n> :NERDTreeToggle<cr>
+      bold_font                 auto
     '';
   };
 
