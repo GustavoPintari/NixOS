@@ -5,134 +5,118 @@
     [ # Include the results of the hardware scan.
       ./hardware-configuration.nix
     ];
-  
-  # Use the systemd-boot EFI boot loader.
+
+  # Bootloader
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
-  
-  # Define hostname
-  networking.hostName = "nixos";
+  boot.loader.efi.efiSysMountPoint = "/boot/efi";
+  boot.kernelPackages = pkgs.linuxPackages_latest;
+
+  # Networking
+  networking.hostName = "nixos"; 
   networking.networkmanager.enable = true;
 
-  # Set time zone
+  # Time zone
   time.timeZone = "America/Sao_Paulo";
-
-  networking.interfaces.enp0s25.useDHCP = true;
-  networking.interfaces.wlp2s0.useDHCP = true;
-  programs.nm-applet.enable = true; 
 
   # Internationalisation properties
   i18n.defaultLocale = "en_US.UTF-8";
 
-  # Opengl 
-  hardware.opengl.enable = true;
-  hardware.opengl.driSupport32Bit = true;
-
-  # Flatpak
-  services.flatpak.enable = true;
-
-  xdg.portal = {
-    enable = true;
-    extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
+  i18n.extraLocaleSettings = {
+    LC_ADDRESS = "pt_BR.UTF-8";
+    LC_IDENTIFICATION = "pt_BR.UTF-8";
+    LC_MEASUREMENT = "pt_BR.UTF-8";
+    LC_MONETARY = "pt_BR.UTF-8";
+    LC_NAME = "pt_BR.UTF-8";
+    LC_NUMERIC = "pt_BR.UTF-8";
+    LC_PAPER = "pt_BR.UTF-8";
+    LC_TELEPHONE = "pt_BR.UTF-8";
+    LC_TIME = "pt_BR.UTF-8";
   };
 
-  # Bluetooth
-  hardware.bluetooth.enable = true;
+  # Xorg
+  services.xserver.enable = true;
 
-  # Intel Microcode
-  hardware.cpu.intel.updateMicrocode = true;
- 
-  # VsCode Error
-  services.gnome.gnome-keyring.enable = true;
-  
-  # Nix Optimise 
-  nix.autoOptimiseStore = true;
-
-  nix.gc = {
-    automatic = true;
-    dates = "daily";
-    options = "-d";
-  };
-
-  # Sound
-  sound.enable = true;
-  hardware.pulseaudio.enable = true;
-
-  # VirtualBox
-  virtualisation.virtualbox.host.enable = true;
-  users.extraGroups.vboxusers.members = [ "gustavo" ];
-  
-  # Docker
-  virtualisation.docker.enable = true;
-
-  # Users 
-  users.users.gustavo = {
-    isNormalUser = true;
-    extraGroups = [ "wheel" "docker" "networkmanager" ];
-  };
-  
-  # Packages
-  nixpkgs.config.allowUnfree = true;
-
-  environment.systemPackages = with pkgs; [
-    gparted xclip 
-  ];
-
-  # Neovim
-  programs.neovim = {
-    enable = true;
-    defaultEditor = true;
-    configure = {
-      customRC = (
-        builtins.readFile /home/gustavo/.config/nvim/init.vim
-      );
-    };
-  };
-
-  # Shell
-  programs.zsh = {
-    enable = true;
-    enableGlobalCompInit = false;
-  };
-
-  users.defaultUserShell = pkgs.zsh; 
-
-  # Desktop Manager
-  services.xserver.desktopManager.xfce = {
-    enable = true;
-    thunarPlugins = [
-      pkgs.xfce.thunar-volman
-    ];
-  };
-	  
-  # Display Manager
-  services.xserver.displayManager = {
-    defaultSession = "xfce";
-    lightdm.enable = true;
-  };
-
-  services.acpid.enable = true;
-
-  # Xorg 
-  services.xserver = {
-    enable = true;
-    layout = "br";
-    xkbVariant = "thinkpad";
-  };
-
-  # Enable touchpad support 
-  services.xserver.libinput.enable = true;
-
-  # Remove screen tearing
+  # Remove Screen Tearing 
   services.xserver.videoDrivers = [ "intel" ];
   services.xserver.deviceSection = ''
 	  Option "DRI" "3"
 	  Option "TearFree" "true"
   '';
 
-  # Firewall
-  networking.firewall.enable = true;
-  networking.firewall.allowedTCPPorts = [ ];
+  # Display Manager
+  services.xserver.displayManager.sddm = {
+    enable = true;
+    theme = "breeze";
+  };
+
+  # Desktop Manager
+  services.xserver.desktopManager.plasma5 = {
+    enable = true;
+    excludePackages = with pkgs.libsForQt5; [
+      elisa
+      oxygen
+      khelpcenter
+      konsole
+      plasma-browser-integration
+      print-manager
+      kwallet 
+      spectacle
+      krunner
+    ];
+  };
+
+  # Keymap
+  services.xserver = {
+    layout = "br";
+  };
+
+  console.keyMap = "br-abnt2";
+
+  # Sound
+  sound.enable = true;
+  hardware.pulseaudio.enable = false;
+  security.rtkit.enable = true;
+  services.pipewire = {
+    enable = true;
+    alsa.enable = true;
+    alsa.support32Bit = true;
+    pulse.enable = true;
+  };
+
+  # Docker
+  virtualisation.docker.enable = true;
+
+  # Users
+  users.users.pintari = {
+    isNormalUser = true;
+    description = "Gustavo Pintari";
+    extraGroups = [ "networkmanager" "docker" "wheel" ];
+  };
+
+  # Packages
+  nixpkgs.config.allowUnfree = true;
+
+  environment.systemPackages = with pkgs; [
+    gparted 
+    vim 
+    xclip
+    libsForQt5.sddm-kcm
+  ];
+
+  # VsCode Error
+  services.gnome.gnome-keyring.enable = true;
+
+  # Flatpak
+  services.flatpak.enable = true;
+  xdg.portal.enable = true;
+  
+  # Shell
+  programs.zsh = {
+    enable = true;
+  };
+
+  users.defaultUserShell = pkgs.zsh;
 
   # This value determines the NixOS release from which the default
   # settings for stateful data, like file locations and database versions
@@ -140,7 +124,6 @@
   # this value at the release version of the first install of this system.
   # Before changing this value read the documentation for this option
   # (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
-  system.stateVersion = "21.11"; # Did you read the comment?
+  system.stateVersion = "22.11"; # Did you read the comment?
 
 }
-

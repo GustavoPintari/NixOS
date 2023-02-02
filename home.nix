@@ -5,41 +5,31 @@
     ./nvim/nvim.nix
   ];
 
-  home.username = "gustavo";
-  home.homeDirectory = "/home/gustavo";
+  home.username = "pintari";
+  home.homeDirectory = "/home/pintari";
 
   home.sessionVariables = {
     EDITOR = "nvim";
   };
 
   home.packages = with pkgs; [
-    firefox-esr libreoffice neofetch git  
-    nicotine-plus ncmpcpp mpd vlc ranger ueberzug krita
-    winePackages.staging eclipses.eclipse-jee jdk vscode git
-    transmission-gtk flameshot bottom htop wget curl 
-    obsidian discord patool unzip unrar
-    corefonts nerdfonts
-    beekeeper-studio insomnia 
+    thunderbird firefox-esr libreoffice-qt neofetch git  
+    nicotine-plus ncmpcpp mpd vlc krita
+    winePackages.staging vscode git transmission-qt
+    bottom htop wget curl flameshot 
+    obsidian discord corefonts nerdfonts
+    beekeeper-studio insomnia xcolor
+    eclipses.eclipse-jee jdk18 
   ];
 
   fonts.fontconfig.enable = true;
 
-  # GTK
-  gtk = {
-    enable = true;
-    iconTheme.name = "Qogir-Dark";
-    iconTheme.package = pkgs.qogir-icon-theme;
-  };
-
-  # Rofi
   programs.rofi = {
     enable = true;
     theme = "paper-float.rasi";
-    plugins = [
-      pkgs.rofi-calc
-    ];
+    font = "Hack Regular 14";
   };
-  
+
   # Shell
   programs.zsh = {
     enable = true;
@@ -70,11 +60,31 @@
       theme = "nicoulaj";
     };
   };
-  
+
+  # MPD
+  services.mpd = {
+    enable = true;
+    dataDir = ~/.config/mpd;
+    musicDirectory = ~/Music;
+    extraConfig = ''
+      auto_update "yes"
+
+      audio_output {
+        type  "pipewire"
+        name  "pipewire"
+      }
+      audio_output {
+        type  "fifo"
+        name  "FIFO"
+        path  "/tmp/mpd.fifo"
+        format  "44100:16:2"
+      }
+    '';
+  };
+
   # Ncmpcpp
   programs.ncmpcpp = {
     enable = true;
-    mpdMusicDir = ~/Music;
     settings = {
       startup_screen = "media_library";
     };
@@ -86,6 +96,7 @@
     userName  = "GustavoPintari";
     userEmail = "gustavopintari@gmail.com";
     extraConfig = {
+      pull.rebase = false;
       credential.helper = "${
           pkgs.git.override { withLibsecret = true; }
         }/bin/git-credential-libsecret";
@@ -99,9 +110,10 @@
     font = {
       package = pkgs.hack-font;
       name = "Hack Regular";
-      size = 12;
+      size = 15;
     };
     extraConfig = ''
+      hide_window_decorations   yes
       background                #000000
       cursor_blink_interval     1.5
       background_opacity        0.95
